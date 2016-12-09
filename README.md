@@ -22,7 +22,7 @@ drwxrwxr-x 2 Azure123 Azure123 4096 Dec  9 01:45 code
 -rw-rw-r-- 1 Azure123 Azure123  249 Dec  9 01:45 Dockerfile
 -rw-rw-r-- 1 Azure123 Azure123  133 Dec  9 01:45 README.md
 ```
-Check if docker daemon is running, and if it is, build the docker image for this application (you can tag your image anything you want, I have tagged it "koushik/fileuploadsimple")
+Check if docker daemon is running, and if it is, build the docker image for this application (you can tag your image anything you want, I have tagged it "koushik/fileuploadsimple" below)
 ```
 docker build -t koushik/fileuploadsimple .
 ```
