@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<form action="upload.php" method="post" enctype="multipart/form-data" style="font-family:Tahoma">
+	<br/>
+	Select file to upload (max size 1 MB): <input type="file" name="fileToUpload" id="fileToUpload">
+	<br/><br/>
+	Optionally, specifiy password for downloading the file (alphanumeric and underscores only, no spaces or special characters please): <input type="text" name="passphrase" id="passphrase" maxlength="32" size="32" pattern="^\w*$"><br/>
+	<br/>
+	<input type="submit" value="Upload File" name="submit"><br/>
+</form>
+
+</body>
+</html>
