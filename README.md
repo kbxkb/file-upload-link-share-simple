@@ -61,7 +61,7 @@ Before discussing the architectural considerations, let me point a few things ab
 
 The Dockerfile simply copies the contents of *code* directory to /var/www/html on the container, which is apache2's document root. The *form.html* is as simple as it gets - providing a way for the user to upload a file upto 1 MB in size and optionally provide a password for the file.
 
-The 2 PHP files (*upload.php* and *download.php*) are self-explanatory in nature. My laziness is organizing the code with the proper etiquette in mind is apparent from the fact that functions are duplicated across the PHP files instead of making proper include files.
+The 2 PHP files (*upload.php* and *download.php*) are self-explanatory in nature. My laziness in organizing the code with the proper etiquette in mind is apparent from the fact that functions are duplicated across the PHP files instead of making proper include files.
 
 *upload.php* saves the uploaded file in /var/www/html/uploads folder. A poor choice really. Anyone could, in theory, use the app to kill us :) They could upload a file called "terrible.php" with a few lines of malicious code in it, and then browse to http://<server-name>/uploads/_terrible.php to execute it. They do not know a couple of things that must be *figured out* first:
 * the uploaded file is saved in a subfolder called "uploads", but a decent hacker would keep that as one of their first guesses
