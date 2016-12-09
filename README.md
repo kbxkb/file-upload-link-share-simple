@@ -14,7 +14,7 @@ To run this code, you need a Linux host running Docker. It does not matter how y
 
 ### Get the code and run it
 
-Once you are logged into a Linux host running Docker, clone this repository, and cd into file-upload-link-share-simple directory
+Once you are logged into a Linux host running Docker, clone this repository, and cd into *file-upload-link-share-simple* directory
 ```
 XXXXX@MyDockerVM:~/file-upload-link-share-simple$ ls -l
 total 12
