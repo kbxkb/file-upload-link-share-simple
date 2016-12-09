@@ -1,4 +1,5 @@
 # A Dockerized LAMP web-app - upload files and share links
+# (and architecture considerations at a much grander scale)
 
 This is a simple LAMP stack web application that enables one to upload files, store the uploaded files <b>encrypted-at-rest</b>, and securely share links for downloading. To keep it secure, these links expire in a day, and the uploader can protect the link with a password.
 
