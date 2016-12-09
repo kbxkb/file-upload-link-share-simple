@@ -41,7 +41,7 @@ http://[[your server's DNS name or IP Address]]/form.html
 
 ### Functionality, assumptions, expected behavior
 
-**How the password-protection feature works**: If the uploader specifies a password to protect the file, the downloader will have to specify the password directly in the URL/link as a query string parameter, "password". The generated link adds this parameter at the end without the value, so all the link-holder has to do is copy the link, paste it in the browser's address bar, and type the password at the end. If the password is correct, it will work. This also means that if a password is provided, the generated link will not work as-is, and there is ample warning and usage instruction provided on the response.
+**How the password-protection feature works**: If the uploader specifies a password to protect the file, the downloader will have to specify the password directly in the URL/link as a query string parameter, "password". *The generated link adds this parameter at the end without the value*, so all the link-holder has to do is copy the link, paste it in the browser's address bar, and type the password at the end. If the password is correct, it will work. This also means that *if a password is provided, the generated link will not work as-is*, and there is ample warning and usage instruction provided on the response.
 
 **How the link-expiration feature works**: To keep it simple, I have compared the unix timestamp of when the download request is made, with that of when it was uploaded. If the difference is > 86,400, I decline the request.
 
