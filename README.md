@@ -51,7 +51,7 @@ http://[[your server's DNS name or IP Address]]/form.html
 
 **Multiple uploads and management**: To keep things simple, if you upload the same file multiple times, the older ones are overwritten each time. There is no version control. There is no content management - once you upload a few files, you cannot come back and regenerate a link without uploading again. If you shared a link with someone, and they have let it expire, you have to upload it again to get a new link. These are all potential enhancements, and fairly easy to achieve, it is just more code. At some point, it is easy to get to a stage where you will need a database to manage the metadata - and then there will be more *state* to the system, and that state and persistence can let us do better things than what this barebone app cannot do now.
 
-That's it! There's nothing more to it :)
+**TO DO** - This entire discussion is written with a fireside architectural chat in mind. Read on, and all the TO DO-s I have in mind will be revealed!
 
 ## Architectural Considerations for Scalability
 
