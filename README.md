@@ -36,7 +36,7 @@ docker run -d -p 80:80 koushik/fileuploadsimple
 ```
 Access the web application from your browser
 ```
-http://[[your server's DNS name or IP Address]]/form.html
+http://[[your server's DNS name or IP Address:Port if non-80]]/form.html
 ```
 
 ### Functionality, assumptions, expected behavior
