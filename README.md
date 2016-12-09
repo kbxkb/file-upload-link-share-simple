@@ -108,3 +108,7 @@ If the solution becomes wildly popular, and people from all over the world start
 ### Load Balancing
 
 Load Balancing solutions (as the application scales horizontally) are an important consideration. Public Cloud platforms have load balancers like ELB or Azure Load Balancers. However, sometimes they lack features like customizable routing rules. For example, a feature like resuming interrupted download may need sticky sessions based on client IP - which is a fairly common need for web applications handling sessions. It is a common thing to trust a stand-alone load balancer like HAProxy more. The challenge becomes in scaling these standalone load-balancers if there is a sudden traffic spike. The cloud-native load balancers are particularly good at at that. Hence, there are pros and cons - but for this application, the cloud-native solutions should be good enough.
+
+## Feedback welcome
+
+Feedback, comments are welcome and will be greatly appreciated! Please send me a pull request on any of the files with your feedback, and I will be happy to get in touch with you!
