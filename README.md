@@ -87,14 +87,14 @@ Here, the context is great to discuss some alternatives to just using Apache htt
 
 ### Caching
 
-Caching only becomes relevant if some of the uploaded files gets very popular, and we see many downloads happening on these hot files. If this is just a personal file-sharing service, where each uploaded file is only downloaded a few times, caching will remain a lower priority. However, if it turns into the next youtube or dropbox, we will need something to cache files. [Nginx can be used to front Apache](https://blog.rackspace.com/nginx-support-enables-massive-web-application-scaling) for a PHP application like this.
+Caching becomes relevant if some of the uploaded files gets very popular, and we see many downloads happening on these hot files. If this is just a personal file-sharing service, where each uploaded file is only downloaded a few times, caching may remain a lower priority. However, if it turns into the next youtube or dropbox, we will need something really scalable to cache files. There are several time-tested solutions, for example, [Nginx can be used to front Apache](https://blog.rackspace.com/nginx-support-enables-massive-web-application-scaling) for a PHP application like this.
 
 Memcached is a widely used solution for caching, but it is not a great solution under two cases (a) for large files (b) if the traffic spikes too quickly, it may not dynamically scale well. Redis is a great option, as it also has disk persistence built in, so the size of the cache is usually not a limiting factor. The PHP code itself can use [APC](http://pecl.php.net/package/APC) for getting maximum mileage out of a single server without being a distributed cache.
 
 When it comes to the topic of caching for a web application, most discussion assume small objects. However, truly scalable caching for large objects like large files need custom solutions - and one that I built for Yahoo's CDN is one such customized solution.
 
-If the solution becomes wildly popular, and people from all over the world start using it, using a commercial CDN like Akamai for caching may be a good idea
+If the solution becomes wildly popular, and people from all over the world start using it, using a commercial CDN like Akamai for caching may be a good idea.
 
 ### Load Balancing
 
-Load Balancing solutions (as the application scales horizontally) are an important consideration. Public Cloud platforms have load balancers like ELB or 
+Load Balancing solutions (as the application scales horizontally) are an important consideration. Public Cloud platforms have load balancers like ELB or Azure Load Balancers. However, sometimes they lack features like customizable routing rules. For example, a feature like resuming interrupted download may need sticky sessions based on client IP - which is a fairly common need for web applications handling sessions. It is a common thing to trust a stand-alone load balancer like HAProxy more. The challenge becomes in scaling these standalone load-balancers if there is a sudden traffic spike. The cloud-native load balancers are particularly good at at that. Hence, there are pros and cons - but for this application, the cloud-native solutions should be good enough.
