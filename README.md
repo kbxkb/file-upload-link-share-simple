@@ -1,4 +1,4 @@
-# A Dockerized LAMP web-app - upload files and share links<br/>(and architecture considerations at a much grander scale)
+# A Dockerized LAMP web-app - upload files and share links<br/>(and architecture considerations at a grander scale)
 
 This is a simple LAMP stack web application that enables one to upload files, store the uploaded files <b>encrypted-at-rest</b>, and securely share links for downloading. To keep it secure, these links expire in a day, and the uploader can protect the link with a password.
 
@@ -77,6 +77,14 @@ This last solution, or at least variations of it, is actually implemented under 
 
 How about encryption on the wire if we use server-side encryption? The obvious answer to this is to offer **https** download links, which is easy to implement, so that would be a TODO for this small project of mine.
 
+### Authorization - why password on the URL?
+
+While discussing security, I also wanted to touch on the authorization aspect of this application - the trick with the password is quick and dirty, but it is not a truly secure solution. I actually save the files on the server with the password as part of its name - I avoided using a database that way. In the minimum, we should change that to use a low-collision hash like SHA1 (or one of the SHA families) instead of using the raw password.
+
+I also do not like the idea of passing the password as part of the URL - it makes the system only usable by geeks. HTTP Basic Authentication is a great solution for this. However, as securing an uploaded file using password is *optional* in this app, the HTTP Server, on receiving a GET request for a file download, has to actually take a peek at the resource itself (or query a metadata store) to check if it will respond with a 401 (which will prompt the browser to ask for a username and password), or just serve the file. Implementing this is possible, but needs more coding - and the point of the application was to start an architectural discussion instead of showcasing specific implementation.
+
+Also, I was trying not to develop a special page/ form for initiating download - but keep the download URL simple and HTTP/REST-based, so that anyone can use it from any browser. Hence, I opted for passing the password as a query string parameter - and I said to myself, "I am anyway building this for geeks for now, so what the heck".
+
 ### High Availability, Fault Tolerance
 
 A containerized solution will need a container orchestration platform with good scheduling prowess to ensure HA and Fault Tolerance. Luckily, we are not short on the choices here, and the current war going on to capture the market makes all of us winners. Kubernetes and DC/OS, in my opinion, are the fore-runners. [ECS](https://aws.amazon.com/ecs/) has proprietary scheduling, which encourages vendor lock-in more than [ACS](https://azure.microsoft.com/en-us/services/container-service/) does. But all public clouds let you run your own IaaS clusters running the scheduler of your choice - if you want more control.
@@ -87,9 +95,9 @@ Here, the context is great to discuss some alternatives to just using Apache htt
 
 ### Caching
 
-Caching becomes relevant if some of the uploaded files gets very popular, and we see many downloads happening on these hot files. If this is just a personal file-sharing service, where each uploaded file is only downloaded a few times, caching may remain a lower priority. However, if it turns into the next youtube or dropbox, we will need something really scalable to cache files. There are several time-tested solutions, for example, [Nginx can be used to front Apache](https://blog.rackspace.com/nginx-support-enables-massive-web-application-scaling) for a PHP application like this.
+Caching becomes relevant if some of the uploaded files gets very popular, and we see many downloads happening on these hot files. If this is just a personal file-sharing service, where each uploaded file is only downloaded a few times, caching may remain a lower priority. However, if it turns into the next youtube or dropbox, we will need something really scalable to cache files for high performace. There are several time-tested solutions, for example, [Nginx can be used to front Apache](https://blog.rackspace.com/nginx-support-enables-massive-web-application-scaling) for a PHP application like this.
 
-Memcached is a widely used solution for caching, but it is not a great solution under two cases (a) for large files (b) if the traffic spikes too quickly, it may not dynamically scale well. Redis is a great option, as it also has disk persistence built in, so the size of the cache is usually not a limiting factor. The PHP code itself can use [APC](http://pecl.php.net/package/APC) for getting maximum mileage out of a single server without being a distributed cache.
+Memcached is a widely used solution for caching, but it is not a great solution under two cases (a) for large files (b) if the traffic spikes too quickly, it may not dynamically scale well. Memcached can be used to cache negative responses to download requests like incorrect passwords or non-existing files. Redis is a great option, as it also has disk persistence built in, so the size of the cache is usually not a limiting factor. The PHP code itself can use [APC](http://pecl.php.net/package/APC) for getting maximum mileage out of a single server without being a distributed cache.
 
 When it comes to the topic of caching for a web application, most discussion assume small objects. However, truly scalable caching for large objects like large files need custom solutions - and one that I built for Yahoo's CDN is one such customized solution.
 
