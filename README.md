@@ -75,6 +75,8 @@ There are several high-level architectural solutions for this problem. One way i
 
 Another way to solve this problem is to decouple the encryption process on the server-side and make it *asynchronous*. Here, the file will get uploaded, but downloading it won't be allowed instantaneously. An asynchronous process will encrypt it in-place, and mark it as *downloadable*. Storing such metadata around the file will, of course, need a database - but a metadata management system will anyway become mandatory as we get to these complex requirements.
 
+This is also a good example of where a **decoupled queue-based architecture will help us scale**. At production scale, this application should be split into layers where such resource-intensive tasks are happening at a different layer - and the upload servers are simply queueing the files for the encryption servers to pick them up from a secure location and encrypt them. I have implemented such a system for transcoding video files at Yahoo and Ooyala, and transcoding is a similar, if not more, CPU-bound task. More on this architecture later on, in the "Performance and Scalability" section below.
+
 This last solution, or at least variations of it, is actually implemented under the hood by EBS or S3 or Azure - it is just we do not see it, and we just enjoy the fruits of someone else's labor. That brings us to yet another kind of solution to this problem - buy instead of build :) Just use docker volume plugins that lets you store the files in the public cloud and check the *encrypted* box!
 
 How about encryption on the wire if we use server-side encryption? The obvious answer to this is to offer **https** download links, which is easy to implement, so that would be a TODO for this small project of mine.
@@ -109,13 +111,15 @@ If the solution becomes wildly popular, and people from all over the world start
 
 I have already discussed some techniques like caching or choice of technology stacks (like ATS) for higher performance and scalability. Here are some more ideas.
 
-* Compression - Using client side compression libraries is a good idea to reduce the payload size while uploading. There is no reason why compression and encryption cannot be done together, and the file may be uploaded using both the techniques applied together at the client. This will result in quicker download times, reduce bandwidth consumption of the website (hence egress charges in a metered cloud world). This will also reduce the number of HTTP calls made against the server, allowing it to scale and perform better
+* **Compression** - Using client side compression libraries is a good idea to reduce the payload size while uploading. There is no reason why compression and encryption cannot be done together, and the file may be uploaded using both the techniques applied together at the client. This will result in quicker download times, reduce bandwidth consumption of the website (hence egress charges in a metered cloud world). This will also reduce the number of HTTP calls made against the server, allowing it to scale and perform better
 
-* Benchmarking performace metrics - How many concurrent connections/ uploads can my server handle? How many concurrent downloads? We should use a modern load testing toolkit to measure and improve. If we do not measure, we cannot improve!
+* **Decoupling resource-intensive tasks** like encryption, transcoding, etc. What if this is a video file uploading service, and instead of merely downloading, the users would want to *play* the files? Dealing with video adds considerations of a differet dimension. I will not go into painstaking details, but here is a quick summary: As video files can be consumed from various kinds of devices/ phones/ tablets, and the formatting and packaging of the video file that these clients can play differ from one to the other, serving video at scale literally means that you have to *transcode* and *dynamically package* the files into various formats. Then there is the question of adaptive streaming to adjust to the internet bandwidth of various users for a smooth end user playback experience - for which you have to deal with multiple bitrates. Transcoding, therefore, is a hugely resource intensive task - even greater than encryption or compression.
 
-* Telemetry and Monitoring - On the aspect of measuring, a good development practice is to put in telemetry and performance metrics liberally to let us gauge server performance at runtime. The public clouds usually do a good job in providing such statistics at the infrastrucure level, but we should add application level metrics (like encryption latency) as well. We should integrate with nagios or datadog or similar lightweight agent-based services to serve this purpose
 
-* 
+
+* **Benchmarking performace** - How many concurrent connections/ uploads can my server handle? How many concurrent downloads? We should use a modern load testing toolkit to measure and improve. If we do not measure, we cannot improve!
+
+* **Telemetry and Monitoring** - On the aspect of measuring, a good development practice is to put in telemetry and performance metrics liberally to let us gauge server performance at runtime. The public clouds usually do a good job in providing such statistics at the infrastrucure level, but we should add application level metrics (like encryption latency) as well. We should integrate with nagios or datadog or similar lightweight agent-based services to serve this purpose
 
 ### Load Balancing
 
