@@ -53,11 +53,26 @@ http://[[your server's DNS name or IP Address]]/form.html
 
 That's it! There's nothing more to it :)
 
-## Architectural Considerations
+## Architectural Considerations for Scalability
 
-### Why use Docker Containers and a better design for Storage
+### A better design for Storage (and one of the reasons to choose Containerization)
 
-What will make this web application truly portable? The PHP code and Apache are very portable, all platforms/ Linux distros/ public or private clouds will run them. It then boils down to the storage of the uploaded files. If we were to scale this application to millions of users, we will need a large and safe (read *backed-up, disaster-proof*) space to store all the uploaded files. That brings us to the cloud - one of the cheaper ways to store tons of stuff. But then as soon as you choose one of the public clouds for storage, portability is at risk because the application will now haw to use 
+The current code does nothing special to store the uploaded files. It just uses the disk. As written, it does not even use the host's disk, it uses the filesystem inside the container, which is volatile and hence not recommended at all. I will explain why I made that choice in a little bit. But before that, let us think through the topic of portability at scale.
 
-### Storage of the uploaded files, Containers and Persistent Volumes
+What will make this web application truly portable? The PHP and Apache parts are very portable, all platforms/ Linux distros/ public or private clouds will run them. It then boils down to the storage of the uploaded files. If we were to scale this application to millions of users, we will need a large and safe (read *backed-up, disaster-proof*) space to store all the uploaded files. That brings us to the cloud - one of the cheaper ways to store tons of stuff. But then as soon as you choose one of the public clouds for storage, portability is at risk because the application will now have to use the storage APIs/SDK specific to that platform.
 
+It is clear, therefore, that we have to build an abstraction layer for persistent storage. Docker containers provide a great way to do that using [named volumes](https://docs.docker.com/engine/tutorials/dockervolumes/) or data-only containers. If your application is made up of 4 or 5 containers, imagine one of them being your *[storage micro-service](http://www.tricksofthetrades.net/2016/03/14/docker-data-volumes/)*. It probably uses a [volume plugin](https://docs.docker.com/engine/extend/plugins_volume/) to abstract the storage out to AWS EBS or Azure Files - or a Ceph or GlusterFS cluster - the [list](https://docs.docker.com/engine/extend/legacy_plugins/) of such plugins is already quite long, and growing longer every month. The other containers then can use the --volumes-from option to mount these persistent data volumes from the storage micro-service container.
+
+In this current codebase, I have kept it quick and simple by storing the files inside the container's filesystem itself. The slightly more secure solution would be to map the host machine's disk into the container using the -v flag, and storing the files on some location of the docker host. However, seeing that my host was a VM on the cloud, I saw little point in that. Coupled with the fact that apache2 cannot write to a mounted volume owned by root, I would have needed to implement the solution described [here](http://stackoverflow.com/questions/23544282/what-is-the-best-way-to-manage-permissions-for-docker-shared-volumes). I have left that as an exercise for the near future.
+
+### Security at Scale
+
+Currently, I use inline PHP [openssl-encrypt](http://php.net/openssl-encrypt) to encrypt the file at rest while it is being uploaded, and [openssl-decrypt](http://php.net/openssl-decrypt) to decrypt it while it is being downloaded. While these are handy PHP functions, and will work fairly well unless the file sizes are not very large, this is **not** a very scalable solution. Encrypting and decrypting large files inline will limit the concurrent maximum number of users the system can support.
+
+There are several high-level architectural solutions for this problem. One way is to let users choose client-side encryption if they so desire. Javascript frameworks like [crypto-js](https://code.google.com/archive/p/crypto-js/) or [crypto-browserify](https://github.com/crypto-browserify/crypto-browserify) can be used for this, like [this POC](https://github.com/hellais/up-crypt) does. The advantage of this kind of solution is that the server side code is not bogged down by computing resources needed for encryption/ decryption - hence it can scale to a higher concurrency. Admittedly, you have to create a specially designed download page instead of sharing a simple http/https link that can be used on any REST client. But hey - you got to do the work *somewhere*.
+
+Another way to solve this problem is to decouple the encryption process on the server-side and make it *asynchronous*. Here, the file will get uploaded, but downloading it won't be allowed instantaneously. An asynchronous process will encrypt it in-place, and mark it as *downloadable*. Storing such metadata around the file will, of course, need a database - but a metadata management system will anyway become mandatory as we get to these complex requirements.
+
+This last solution, I suspect, is actually implemented under the hood by EBS or S3 or Azure - it is just we do not see it, and we just enjoy the fruits of someone else's labor. That brings us to yet another kind of solution to this problem - buy instead of build :) Just use docker volume plugins that lets you store the files in the public cloud and check the *encrypted* box!
+
+How about encryption on the wire if we use server-side encryption? The obvious answer to this is to offer **https** download links, which is easy to implement, so that would be a TODO for this small project of mine.
