@@ -73,6 +73,28 @@ There are several high-level architectural solutions for this problem. One way i
 
 Another way to solve this problem is to decouple the encryption process on the server-side and make it *asynchronous*. Here, the file will get uploaded, but downloading it won't be allowed instantaneously. An asynchronous process will encrypt it in-place, and mark it as *downloadable*. Storing such metadata around the file will, of course, need a database - but a metadata management system will anyway become mandatory as we get to these complex requirements.
 
-This last solution, I suspect, is actually implemented under the hood by EBS or S3 or Azure - it is just we do not see it, and we just enjoy the fruits of someone else's labor. That brings us to yet another kind of solution to this problem - buy instead of build :) Just use docker volume plugins that lets you store the files in the public cloud and check the *encrypted* box!
+This last solution, or at least variations of it, is actually implemented under the hood by EBS or S3 or Azure - it is just we do not see it, and we just enjoy the fruits of someone else's labor. That brings us to yet another kind of solution to this problem - buy instead of build :) Just use docker volume plugins that lets you store the files in the public cloud and check the *encrypted* box!
 
 How about encryption on the wire if we use server-side encryption? The obvious answer to this is to offer **https** download links, which is easy to implement, so that would be a TODO for this small project of mine.
+
+### High Availability, Fault Tolerance
+
+A containerized solution will need a container orchestration platform with good scheduling prowess to ensure HA and Fault Tolerance. Luckily, we are not short on the choices here, and the current war going on to capture the market makes all of us winners. Kubernetes and DC/OS, in my opinion, are the fore-runners. [ECS](https://aws.amazon.com/ecs/) has proprietary scheduling, which encourages vendor lock-in more than [ACS](https://azure.microsoft.com/en-us/services/container-service/) does. But all public clouds let you run your own IaaS clusters running the scheduler of your choice - if you want more control.
+
+A best practice for HA is to keep the application code as stateless as possible. The code as it is now is entirely stateless (not the file storage though, but we are just talking about the application code here). However, as metadata and session management requirements creep in, it may be a challenge to keep it that way - especially if we increase the maximum allowed file size and allow users to resume interrupted downloads.
+
+Here, the context is great to discuss some alternatives to just using Apache httpd as the HTTP server. Apache Traffic Server is not as out-of-the-box as apache2, but it lets us create [plugins](https://docs.trafficserver.apache.org/en/4.2.x/sdk/how-to-create-trafficserver-plugins.en.html) that can hook into the PUT and GET requests. It is possible to write or modify some plugins to enable "streaming" of large files where the HTTP Server acts as a pass-through for the file's contents as it makes it way to its final storage destination. Such a design will let the solution scale to a much higher number of concurrent users as the memory on the server will be more efficiently used - it will need slightly powerful CPU-s to offset that. It will also be easier to implement "resume interrupted upload/ download" feature in that case as spooling of the file at the web server layer is not happening, so the transaction becomes more atomic, hence more fault-tolerant.
+
+### Caching
+
+Caching only becomes relevant if some of the uploaded files gets very popular, and we see many downloads happening on these hot files. If this is just a personal file-sharing service, where each uploaded file is only downloaded a few times, caching will remain a lower priority. However, if it turns into the next youtube or dropbox, we will need something to cache files. [Nginx can be used to front Apache](https://blog.rackspace.com/nginx-support-enables-massive-web-application-scaling) for a PHP application like this.
+
+Memcached is a widely used solution for caching, but it is not a great solution under two cases (a) for large files (b) if the traffic spikes too quickly, it may not dynamically scale well. Redis is a great option, as it also has disk persistence built in, so the size of the cache is usually not a limiting factor. The PHP code itself can use [APC](http://pecl.php.net/package/APC) for getting maximum mileage out of a single server without being a distributed cache.
+
+When it comes to the topic of caching for a web application, most discussion assume small objects. However, truly scalable caching for large objects like large files need custom solutions - and one that I built for Yahoo's CDN is one such customized solution.
+
+If the solution becomes wildly popular, and people from all over the world start using it, using a commercial CDN like Akamai for caching may be a good idea
+
+### Load Balancing
+
+Load Balancing solutions (as the application scales horizontally) are an important consideration. Public Cloud platforms have load balancers like ELB or 
