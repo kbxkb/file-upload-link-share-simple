@@ -46,11 +46,18 @@ http://[[your server's DNS name or IP Address]]/form.html
 **How the link-expiration feature works**: To keep it simple, I have compared the unix timestamp of when the download request is made, with that of when it was uploaded. If the difference is > 86,400 (however many seconds are in a day), I decline the request.
 
 **The form** itself is self-explanatory. Things to keep in mind:
-* I used an arbitrary upper file size limit of 1 MB. However, this can be easily increased - uploading a larger file will obviously take longer, but some UI animation magic may be done to keep the user interested. The encryption-at-rest feature is implemented using openssl - and the file is encrypted while writing, decrypted while reading. The larger the file, the longer will that take as well. I have some ideas to scale this design in the later sections.
+* I used an arbitrary upper file size limit of 1 MB. However, this can be easily increased - uploading a larger file will obviously take longer, but some UI animation magic may be done to keep the user interested. The encryption-at-rest feature is implemented using openssl - and the file is encrypted while writing, decrypted while reading. The larger the file, the longer will that take as well. I have some ideas to scale this design in the later sections (under *Architectural Considerations/ Security*).
 * I set rules for the password so that I do not have to deal with special characters that the user can input. This enabled me to write something quickly, as the password is meant to be used directly on the download URL, and I did not want to deal with time-consuming URL santization code - which are all easy, but spending time with that was not the point of this app.
 
-**Multiple uploads and management**: To keep things simple, if you upload the same file multiple times, the older ones are overwritten each time. There is no version control. There is no content management - once you upload a few files, you cannot come back and regenerate a link without uploading again. If you shared a link with someone, and they have let it expire, you have to upload it again to get a new link. These are all potential enhancements, and fairly easy to achieve, it is just more code. At some point, it is easy to get to a stage where you will need a database to manage the metadata - and then there will be more *state* to the system, and that state and persistence can let us do better things that what this barebone app cannot do now.
+**Multiple uploads and management**: To keep things simple, if you upload the same file multiple times, the older ones are overwritten each time. There is no version control. There is no content management - once you upload a few files, you cannot come back and regenerate a link without uploading again. If you shared a link with someone, and they have let it expire, you have to upload it again to get a new link. These are all potential enhancements, and fairly easy to achieve, it is just more code. At some point, it is easy to get to a stage where you will need a database to manage the metadata - and then there will be more *state* to the system, and that state and persistence can let us do better things than what this barebone app cannot do now.
 
 That's it! There's nothing more to it :)
 
+## Architectural Considerations
+
+### Why use Docker Containers and a better design for Storage
+
+What will make this web application truly portable? The PHP code and Apache are very portable, all platforms/ Linux distros/ public or private clouds will run them. It then boils down to the storage of the uploaded files. If we were to scale this application to millions of users, we will need a large and safe (read *backed-up, disaster-proof*) space to store all the uploaded files. That brings us to the cloud - one of the cheaper ways to store tons of stuff. But then as soon as you choose one of the public clouds for storage, portability is at risk because the application will now haw to use 
+
+### Storage of the uploaded files, Containers and Persistent Volumes
 
