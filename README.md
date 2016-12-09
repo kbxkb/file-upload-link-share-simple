@@ -65,11 +65,17 @@ The 2 PHP files (*upload.php* and *download.php*) are self-explanatory in nature
 
 *upload.php* saves the uploaded file in /var/www/html/uploads folder. A poor choice really. Anyone could, in theory, use the app to kill us :) They could upload a file called "terrible.php" with a few lines of malicious code in it, and then browse to http://<server-name>/uploads/_terrible.php to execute it. They do not know a couple of things that must be *figured out* first:
 * the uploaded file is saved in a subfolder called "uploads", but a decent hacker would keep that as one of their first guesses
-* the uploaded file is saved with an underscore preceding its name if no password is specified, but that, too is not a very obscure thing to guess
+* the uploaded file is saved with an underscore preceding its name if no password is specified, but that, too is not a very obscure thing to guess (if a password *is* specified, the saved file name is {password}_{base_file_name} - that's how I get around using a data store for saving the password, but even that is not a secure choice, as the password is in plain text, it should have been hashed and salted in the minimum instead)
 * the code in the uploaded php file cannot do widespread harm as it will be executed in the context of apache's worker process whose uid and gid are not all powerful, but figuring out a way to gain more powerful access is just a matter of time
 
-*upload.php* 
+*upload.php* generates the download link by using a bitwise XOR hash applied on the base file name (using the timestamp as the key), and then URL encoding it. Bitwise XOR is fully reversible, so on in *download.php*, we call the same method to generate the physical file base name back.
 
+*download.php* does very little - it converts the URL back to the physical file path and serves it. If the password is incorrect or missing, it simply does not find the reverse-name-engineered file, because no such file exists.
+
+Both *upload.php* and *download.php* use openssl encryption to encrypt and decrypt the file respectively.
+
+There is nothing more to it!
+<br/>
 
 ## Architectural Considerations for Scalability
 
