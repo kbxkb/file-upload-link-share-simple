@@ -15,7 +15,6 @@ To run this code, you need a Linux host running Docker. It does not matter how y
 ### Get the code and run it
 
 Once you are logged into a Linux host running Docker, clone this repository, and cd into file-upload-link-share-simple directory
-
 ```
 XXXXX@MyDockerVM:~/file-upload-link-share-simple$ ls -l
 total 12
@@ -23,9 +22,23 @@ drwxrwxr-x 2 Azure123 Azure123 4096 Dec  9 01:45 code
 -rw-rw-r-- 1 Azure123 Azure123  249 Dec  9 01:45 Dockerfile
 -rw-rw-r-- 1 Azure123 Azure123  133 Dec  9 01:45 README.md
 ```
-
-Check if docker daemon is running, and if it is, build the docker image for this application (you can tag your image anything you want, I have tagged it "koushik/fileuploadsimple"
-
+Check if docker daemon is running, and if it is, build the docker image for this application (you can tag your image anything you want, I have tagged it "koushik/fileuploadsimple")
 ```
-sudo docker build -t koushik/fileuploadsimple .
+docker build -t koushik/fileuploadsimple .
 ```
+Once the image is built, check the local image repository.
+```
+docker images
+```
+Run the container, forwarding port 80 to some port of your host that you can access from the browser. In the example below, I have forwarded 80 to 80, as my VM on the cloud had inbound HTTP traffic allowed on port 80.
+```
+docker run -d -p 80:80 koushik/fileuploadsimple
+```
+Access the web application from your browser.
+```
+http://[[your server's DNS name or IP Address]]/form.html
+```
+
+### Functionality, assumptions, expected behavior
+
+xxx
