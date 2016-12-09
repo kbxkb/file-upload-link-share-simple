@@ -6,9 +6,9 @@ The primary point of this application is <b>not</b> to show how to write a file-
 
 ## How to run and test this app
 
-First things first. These instructions will get you a copy of the project up and running on your local machine or any Linux VM in AWS or Azure or anywhere else - as long as it is running docker.
+First things first. These instructions will get you a copy of the project up and running on your local machine or any Linux VM in AWS or Azure or anywhere else - as long as it is running Docker.
 
-### Set up your docker host
+### Set up your Docker host
 
 To run this code, you need a Linux host running Docker. It does not matter how you get one or where you are running it. I will not go into the details of how to get one up and running, but there are instruction sets readily available for [AWS](http://docs.aws.amazon.com/AmazonECS/latest/developerguide/docker-basics.html) or [Azure](https://docs.microsoft.com/en-us/azure/virtual-machines/virtual-machines-linux-dockerextension).
 
