@@ -93,7 +93,7 @@ A containerized solution will need a container orchestration platform with good 
 
 A best practice for HA is to keep the application code as stateless as possible. The code as it is now is entirely stateless (not the file storage though, but we are just talking about the application code here). However, as metadata and session management requirements creep in, it may be a challenge to keep it that way - especially if we increase the maximum allowed file size and allow users to resume interrupted downloads.
 
-Here, the context is great to discuss some alternatives to just using Apache httpd as the HTTP server. Apache Traffic Server is not as out-of-the-box as apache2, but it lets us create [plugins](https://docs.trafficserver.apache.org/en/4.2.x/sdk/how-to-create-trafficserver-plugins.en.html) that can hook into the PUT and GET requests. It is possible to write or modify some plugins to enable "streaming" of large files where the HTTP Server acts as a pass-through for the file's contents as it makes it way to its final storage destination. Such a design will let the solution scale to a much higher number of concurrent users as the memory on the server will be more efficiently used - it will need slightly powerful CPU-s to offset that. It will also be easier to implement "resume interrupted upload/ download" feature in that case as spooling of the file at the web server layer is not happening, so the transaction becomes more atomic, hence more fault-tolerant.
+Here, the context is great to discuss some alternatives to just using Apache httpd as the HTTP server. Apache Traffic Server is not as out-of-the-box as apache2, but it lets us create [plugins](https://docs.trafficserver.apache.org/en/4.2.x/sdk/how-to-create-trafficserver-plugins.en.html) that can hook into the PUT and GET requests. It is possible to write or modify some plugins to enable "streaming" of large files where the HTTP Server acts as a pass-through for the file's contents as it makes it way to its final storage destination. Such a design will let the solution scale to a much higher number of concurrent users as the memory on the server will be more efficiently used - it will need slightly powerful CPU-s to offset that. It will also be easier to implement "resume interrupted upload/ download" feature in that case as spooling of the file at the web server layer is not happening, so the transaction becomes more atomic, hence more fault-tolerant. Apache stores all uploaded files in a temp folder before moving them to the final destination. The size and the location of this temp location can be a point of failure at higher scale.
 
 ### Caching
 
@@ -104,6 +104,18 @@ Memcached is a widely used solution for caching, but it is not a great solution 
 When it comes to the topic of caching for a web application, most discussion assume small objects. However, truly scalable caching for large objects like large files need custom solutions - and one that I built for Yahoo's CDN is one such customized solution.
 
 If the solution becomes wildly popular, and people from all over the world start using it, using a commercial CDN like Akamai for caching may be a good idea.
+
+### Performnce and Scalability - Design Considerations
+
+I have already discussed some techniques like caching or choice of technology stacks (like ATS) for higher performance and scalability. Here are some more ideas.
+
+* Compression - Using client side compression libraries is a good idea to reduce the payload size while uploading. There is no reason why compression and encryption cannot be done together, and the file may be uploaded using both the techniques applied together at the client. This will result in quicker download times, reduce bandwidth consumption of the website (hence egress charges in a metered cloud world). This will also reduce the number of HTTP calls made against the server, allowing it to scale and perform better
+
+* Benchmarking performace metrics - How many concurrent connections/ uploads can my server handle? How many concurrent downloads? We should use a modern load testing toolkit to measure and improve. If we do not measure, we cannot improve!
+
+* Telemetry and Monitoring - On the aspect of measuring, a good development practice is to put in telemetry and performance metrics liberally to let us gauge server performance at runtime. The public clouds usually do a good job in providing such statistics at the infrastrucure level, but we should add application level metrics (like encryption latency) as well. We should integrate with nagios or datadog or similar lightweight agent-based services to serve this purpose
+
+* 
 
 ### Load Balancing
 
