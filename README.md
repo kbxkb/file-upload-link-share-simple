@@ -41,7 +41,7 @@ http://[[your server's DNS name or IP Address:Port if non-80]]/form.html
 
 ### Functionality, assumptions, expected behavior
 
-**How the password-protection feature works**: If the uploader specifies a password to protect the file, the downloader will have to specify the password directly in the URL/link as a query string parameter, *"password"*. *The system-generated link adds this query parameter at the end without the value*. Therefore, the link-holder has to do is copy the link, paste it in the browser's address bar, and type the password at the end. If the password is correct, it will work. This also means that *if a password is provided, the generated link will not work as-is*, and there is ample warning and usage instruction provided on the page that displays the link.
+**How the password-protection feature works**: If the uploader specifies a password to protect the file, the downloader will have to specify the password directly in the URL/link as a query string parameter, *"password"*. *The system-generated link adds this query parameter at the end without the value*. Therefore, the link-holder has to copy the link, paste it in the browser's address bar, and type the password at the end. If the password is correct, it will work. This also means that *if a password is provided, the generated link will not work as-is*, and there is ample warning and usage instruction provided on the page that displays the link.
 
 (The rationale behind this design choice is elaborated [below](https://github.com/kbxkb/file-upload-link-share-simple/blob/master/README.md#authorization---why-password-on-the-url))
 
