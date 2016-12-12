@@ -47,6 +47,8 @@ http://[[your server's DNS name or IP Address:Port if non-80]]/form.html
 
 **How the link-expiration feature works**: To keep it simple, I compare the unix timestamp of the download request with that of the upload. If the difference is > 86,400 seconds, request is declined. There is no purging built in as of now - the file stays.
 
+*Note: If someone tries to fool the link-expiration feature by altering the value of the "x" query string parameter in the download URL (which is the upload timestamp), it won't work, as the filename itself is XOR-hashed using x as the key. Therefore, the system will look for a file by XOR-hashing with the new (tampered) "x", and as a result, the file won't be found on the server.*
+
 **The form** itself is self-explanatory. Things to keep in mind:
 * I used an arbitrary upper file size limit of 1 MB. However, this can be easily increased - uploading a larger file will obviously take longer, but some UI animation magic may be done to keep the user interested. The encryption-at-rest feature is implemented using openssl - and the file is encrypted while writing, decrypted while reading. The larger the file, the longer will that take as well. I have some ideas to scale this design in the later sections (under *[Architectural Considerations/ Security](https://github.com/kbxkb/file-upload-link-share-simple/blob/master/README.md#security-at-scale)*).
 * I set rules for the password so that I do not have to deal with special characters that the user can input. This enabled me to write something quickly, as the password is meant to be used directly on the download URL, and I did not want to deal with time-consuming URL santization code - which are all easy, but spending time with that was not the point of this app.
